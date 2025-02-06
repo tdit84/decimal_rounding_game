@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Decimal Rounding Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 10px;
+    }
+    .choices {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    .choice {
+      padding: 10px 20px;
+      border: 2px solid black;
+      cursor: pointer;
+      border-radius: 6px;
+      font-size: 18px;
+      background-color: #fff;
+      transition: background-color 0.3s;
+    }
+    .choice:hover {
+      background-color: #f0f0f0;
+    }
+    .correct {
+      background-color: lightgreen !important;
+    }
+    .incorrect {
+      background-color: lightcoral !important;
+    }
+    #question {
+      font-size: 22px;
+      margin: 20px;
+    }
+    #feedback {
+      font-size: 20px;
+      margin: 20px;
+    }
+    #starCounter {
+      display: inline-block;
+      margin-right: 20px;
+    }
+    #message {
+      display: inline-block;
+      height: 24px;
+    }
+    /* Optional styling for a simple number line */
+    .number-line {
+      margin: 20px auto;
+      width: 300px;
+      height: 30px;
+      position: relative;
+      border-top: 2px solid black;
+    }
+    .number-line .tick {
+      position: absolute;
+      width: 1px;
+      height: 10px;
+      background: black;
+      top: -5px;
+    }
+    .number-line .label {
+      position: absolute;
+      top: 10px;
+      font-size: 12px;
+      transform: translateX(-50%);
+    }
+  </style>
+</head>
+<body>
+  <h1>Decimal Rounding Game</h1>
+  <div id="question"></div>
+  <div id="visual"></div>
+  <div class="choices" id="choices"></div>
+  <div id="feedback">
+    <span id="starCounter">⭐ 0</span>
+    <span id="message"></span>
+  </div>
+  
+  <script>
+    var starCount = 0;
+    
+    // Update the star counter display
+    function updateStarCounter() {
+      document.getElementById("starCounter").innerHTML = "⭐ " + starCount;
+    }
+    
+    // (Optional) Generate a simple number line visual from min to max.
+    function generateNumberLine(min, max) {
+      var visualDiv = document.getElementById("visual");
+      visualDiv.innerHTML = "";
+      var numberLine = document.createElement("div");
+      numberLine.className = "number-line";
+      
+      // Create ticks for the minimum, midpoint, and maximum values.
+      var ticks = [
+        { value: min, left: 0 },
+        { value: (min + max) / 2, left: 50 },
+        { value: max, left: 100 }
+      ];
+      ticks.forEach(function(tick) {
+        var tickDiv = document.createElement("div");
+        tickDiv.className = "tick";
+        tickDiv.style.left = tick.left + "%";
+        numberLine.appendChild(tickDiv);
+        var labelDiv = document.createElement("div");
+        labelDiv.className = "label";
+        labelDiv.style.left = tick.left + "%";
+        labelDiv.innerHTML = tick.value;
+        numberLine.appendChild(labelDiv);
+      });
+      visualDiv.appendChild(numberLine);
+    }
+    
+    // Fisher-Yates shuffle to randomize the answer choices.
+    function shuffleArray(array) {
+      for (var i = array.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+      }
+    }
+    
+    // Generate a new rounding question.
+    function generateQuestion() {
+      document.getElementById("message").innerHTML = "";
+      var choices = [];
+      var correctAnswer;
+      var questionText = "";
+      var num;
+      
+      // Clear any existing visual.
+      document.getElementById("visual").innerHTML = "";
+      
+      if (starCount < 7) {
+        // Easier: round the number to the nearest whole number.
+        num = (Math.random() * 20).toFixed(2);
+        correctAnswer = Math.round(num);
+        questionText = "Round <b>" + num + "</b> to the nearest whole number:";
+        
+        // Generate three wrong answer choices by adding or subtracting 1.
+        while (choices.length < 3) {
+          var offset = Math.floor(Math.random() * 3) - 1; // can be -1, 0, or 1
+          if (offset === 0) { offset = 1; }
+          var candidate = correctAnswer + offset;
+          if (choices.indexOf(candidate) === -1 && candidate !== correctAnswer) {
+            choices.push(candidate);
+          }
+        }
+      } else {
+        // Harder: round the number to the nearest tenth.
+        num = (Math.random() * 20).toFixed(2);
+        correctAnswer = Number(num).toFixed(1);
+        questionText = "Round <b>" + num + "</b> to the nearest tenth:";
+        
+        // Generate three wrong answer choices by adding or subtracting 0.1.
+        while (choices.length < 3) {
+          var offset = (Math.floor(Math.random() * 3) - 1); // -1, 0, or 1
+          if (offset === 0) { offset = 0.1; }
+          var candidate = (parseFloat(correctAnswer) + offset).toFixed(1);
+          if (choices.indexOf(candidate) === -1 && candidate !== correctAnswer) {
+            choices.push(candidate);
+          }
+        }
+      }
+      
+      // Include the correct answer and ensure a total of 4 choices.
+      choices.push(correctAnswer);
+      choices = Array.from(new Set(choices)).slice(0,4);
+      if (choices.indexOf(correctAnswer) === -1) {
+        choices[0] = correctAnswer;
+      }
+      shuffleArray(choices);
+      
+      document.getElementById("question").innerHTML = questionText;
+      
+      // Optionally generate a number line visual (from 0 to 20).
+      generateNumberLine(0, 20);
+      
+      var choicesDiv = document.getElementById("choices");
+      choicesDiv.innerHTML = "";
+      choices.forEach(function(choice) {
+        var btn = document.createElement("div");
+        btn.className = "choice";
+        btn.innerHTML = choice;
+        btn.onclick = function() {
+          if (choice == correctAnswer) {
+            btn.classList.add("correct");
+            document.getElementById("message").innerHTML = "Correct! 🎉";
+            starCount++;
+            updateStarCounter();
+            setTimeout(generateQuestion, 1000);
+          } else {
+            btn.classList.add("incorrect");
+            document.getElementById("message").innerHTML = "Incorrect! ❌";
+            starCount--;
+            updateStarCounter();
+          }
+        };
+        choicesDiv.appendChild(btn);
+      });
+    }
+    
+    window.onload = function() {
+      updateStarCounter();
+      generateQuestion();
+    };
+  </script>
+</body>
+</html>
