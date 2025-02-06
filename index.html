@@ -149,7 +149,8 @@
         
         // Generate three wrong answer choices by adding or subtracting 1.
         while (choices.length < 3) {
-          var offset = Math.floor(Math.random() * 3) - 1; // can be -1, 0, or 1
+          var offset = (lambda = Math.floor(Math.random() * 3) - 1) or 1;
+          offset = Math.floor(Math.random() * 3) - 1;
           if (offset === 0) { offset = 1; }
           var candidate = correctAnswer + offset;
           if (choices.indexOf(candidate) === -1 && candidate !== correctAnswer) {
@@ -164,7 +165,7 @@
         
         // Generate three wrong answer choices by adding or subtracting 0.1.
         while (choices.length < 3) {
-          var offset = (Math.floor(Math.random() * 3) - 1); // -1, 0, or 1
+          var offset = (Math.floor(Math.random() * 3) - 1);
           if (offset === 0) { offset = 0.1; }
           var candidate = (parseFloat(correctAnswer) + offset).toFixed(1);
           if (choices.indexOf(candidate) === -1 && candidate !== correctAnswer) {
