@@ -1,15 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Decimal Rounding Game</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kids Decimal Rounding Game</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
       margin: 0;
       padding: 10px;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    #question {
+      font-size: 22px;
+      margin: 20px;
     }
     .choices {
       display: flex;
@@ -20,7 +28,7 @@
     }
     .choice {
       padding: 10px 20px;
-      border: 2px solid black;
+      border: 2px solid #333;
       cursor: pointer;
       border-radius: 6px;
       font-size: 18px;
@@ -28,17 +36,13 @@
       transition: background-color 0.3s;
     }
     .choice:hover {
-      background-color: #f0f0f0;
+      background-color: #e0e0e0;
     }
     .correct {
       background-color: lightgreen !important;
     }
     .incorrect {
       background-color: lightcoral !important;
-    }
-    #question {
-      font-size: 22px;
-      margin: 20px;
     }
     #feedback {
       font-size: 20px;
@@ -52,33 +56,11 @@
       display: inline-block;
       height: 24px;
     }
-    /* Optional styling for a simple number line */
-    .number-line {
-      margin: 20px auto;
-      width: 300px;
-      height: 30px;
-      position: relative;
-      border-top: 2px solid black;
-    }
-    .number-line .tick {
-      position: absolute;
-      width: 1px;
-      height: 10px;
-      background: black;
-      top: -5px;
-    }
-    .number-line .label {
-      position: absolute;
-      top: 10px;
-      font-size: 12px;
-      transform: translateX(-50%);
-    }
   </style>
 </head>
 <body>
-  <h1>Decimal Rounding Game</h1>
+  <h1>Kids Decimal Rounding Game</h1>
   <div id="question"></div>
-  <div id="visual"></div>
   <div class="choices" id="choices"></div>
   <div id="feedback">
     <span id="starCounter">⭐ 0</span>
@@ -87,128 +69,97 @@
   
   <script>
     var starCount = 0;
-    
-    // Update the star counter display
     function updateStarCounter() {
       document.getElementById("starCounter").innerHTML = "⭐ " + starCount;
     }
     
-    // (Optional) Generate a simple number line visual from min to max.
-    function generateNumberLine(min, max) {
-      var visualDiv = document.getElementById("visual");
-      visualDiv.innerHTML = "";
-      var numberLine = document.createElement("div");
-      numberLine.className = "number-line";
-      
-      // Create ticks for the minimum, midpoint, and maximum values.
-      var ticks = [
-        { value: min, left: 0 },
-        { value: (min + max) / 2, left: 50 },
-        { value: max, left: 100 }
-      ];
-      ticks.forEach(function(tick) {
-        var tickDiv = document.createElement("div");
-        tickDiv.className = "tick";
-        tickDiv.style.left = tick.left + "%";
-        numberLine.appendChild(tickDiv);
-        var labelDiv = document.createElement("div");
-        labelDiv.className = "label";
-        labelDiv.style.left = tick.left + "%";
-        labelDiv.innerHTML = tick.value;
-        numberLine.appendChild(labelDiv);
-      });
-      visualDiv.appendChild(numberLine);
-    }
-    
-    // Fisher-Yates shuffle to randomize the answer choices.
-    function shuffleArray(array) {
-      for (var i = array.length - 1; i > 0; i--) {
-        var j = Math.floor(Math.random() * (i + 1));
-        var temp = array[i];
-        array[i] = array[j];
-        array[j] = temp;
-      }
-    }
-    
-    // Generate a new rounding question.
+    // Generates a rounding question.
+    // The game randomly selects a decimal number (0 to 100 with two decimals)
+    // and a rounding instruction: either round to the nearest whole number or nearest tenth.
     function generateQuestion() {
       document.getElementById("message").innerHTML = "";
-      var choices = [];
+      
+      // Generate a random number between 0 and 100 with 2 decimals.
+      var num = parseFloat((Math.random() * 100).toFixed(2));
+      
+      // Randomly choose rounding type: "whole" or "tenth"
+      var roundingTypes = ["whole", "tenth"];
+      var roundingType = roundingTypes[Math.floor(Math.random() * roundingTypes.length)];
+      
+      // Compute the correct answer based on the rounding type.
       var correctAnswer;
-      var questionText = "";
-      var num;
-      
-      // Clear any existing visual.
-      document.getElementById("visual").innerHTML = "";
-      
-      if (starCount < 7) {
-        // Easier: round the number to the nearest whole number.
-        num = (Math.random() * 20).toFixed(2);
+      if (roundingType === "whole") {
         correctAnswer = Math.round(num);
-        questionText = "Round <b>" + num + "</b> to the nearest whole number:";
-        
-        // Generate three wrong answer choices by adding or subtracting 1.
-        while (choices.length < 3) {
-          var offset = (lambda = Math.floor(Math.random() * 3) - 1) or 1;
-          offset = Math.floor(Math.random() * 3) - 1;
-          if (offset === 0) { offset = 1; }
-          var candidate = correctAnswer + offset;
-          if (choices.indexOf(candidate) === -1 && candidate !== correctAnswer) {
-            choices.push(candidate);
-          }
-        }
-      } else {
-        // Harder: round the number to the nearest tenth.
-        num = (Math.random() * 20).toFixed(2);
-        correctAnswer = Number(num).toFixed(1);
-        questionText = "Round <b>" + num + "</b> to the nearest tenth:";
-        
-        // Generate three wrong answer choices by adding or subtracting 0.1.
-        while (choices.length < 3) {
-          var offset = (Math.floor(Math.random() * 3) - 1);
-          if (offset === 0) { offset = 0.1; }
-          var candidate = (parseFloat(correctAnswer) + offset).toFixed(1);
-          if (choices.indexOf(candidate) === -1 && candidate !== correctAnswer) {
-            choices.push(candidate);
-          }
-        }
+      } else { // "tenth"
+        correctAnswer = Math.round(num * 10) / 10;
       }
       
-      // Include the correct answer and ensure a total of 4 choices.
-      choices.push(correctAnswer);
-      choices = Array.from(new Set(choices)).slice(0,4);
-      if (choices.indexOf(correctAnswer) === -1) {
-        choices[0] = correctAnswer;
-      }
-      shuffleArray(choices);
-      
+      // Build the question text.
+      var questionText = "Round " + num + " to the nearest ";
+      questionText += (roundingType === "whole") ? "whole number" : "tenth";
       document.getElementById("question").innerHTML = questionText;
       
-      // Optionally generate a number line visual (from 0 to 20).
-      generateNumberLine(0, 20);
+      // Create choices: include the correct answer and three near misses.
+      var choices = [];
+      choices.push(correctAnswer);
+      
+      // Generate near misses that are close to the correct answer.
+      // For whole numbers, adjust by ±1 and ±2.
+      // For tenths, adjust by ±0.1 and ±0.2.
+      if (roundingType === "whole") {
+        var candidate1 = correctAnswer + 1;
+        var candidate2 = correctAnswer - 1;
+        var candidate3 = correctAnswer + 2;
+      } else {
+        var candidate1 = parseFloat((correctAnswer + 0.1).toFixed(1));
+        var candidate2 = parseFloat((correctAnswer - 0.1).toFixed(1));
+        var candidate3 = parseFloat((correctAnswer + 0.2).toFixed(1));
+      }
+      if (candidate1 !== correctAnswer) choices.push(candidate1);
+      if (candidate2 !== correctAnswer) choices.push(candidate2);
+      if (candidate3 !== correctAnswer) choices.push(candidate3);
+      
+      // In case we don't have 4 unique choices, generate a random offset.
+      while (choices.length < 4) {
+        var offset = (roundingType === "whole") ? Math.floor(Math.random() * 5) - 2 : parseFloat(((Math.random() * 0.4) - 0.2).toFixed(1));
+        if (offset === 0) continue;
+        var candidate = (roundingType === "whole") ? correctAnswer + offset : parseFloat((correctAnswer + offset).toFixed(1));
+        if (choices.indexOf(candidate) === -1 && candidate >= 0) {
+          choices.push(candidate);
+        }
+      }
+      
+      // Shuffle the choices.
+      for (let i = choices.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [choices[i], choices[j]] = [choices[j], choices[i]];
+      }
       
       var choicesDiv = document.getElementById("choices");
       choicesDiv.innerHTML = "";
-      choices.forEach(function(choice) {
+      for (var i = 0; i < choices.length; i++) {
+        var choice = choices[i];
         var btn = document.createElement("div");
         btn.className = "choice";
         btn.innerHTML = choice;
-        btn.onclick = function() {
-          if (choice == correctAnswer) {
-            btn.classList.add("correct");
-            document.getElementById("message").innerHTML = "Correct! 🎉";
-            starCount++;
-            updateStarCounter();
-            setTimeout(generateQuestion, 1000);
-          } else {
-            btn.classList.add("incorrect");
-            document.getElementById("message").innerHTML = "Incorrect! ❌";
-            starCount--;
-            updateStarCounter();
-          }
-        };
+        btn.onclick = (function(selected, correct) {
+          return function() {
+            if (selected === correct) {
+              this.classList.add("correct");
+              document.getElementById("message").innerHTML = "Correct! 🎉";
+              starCount++;
+              updateStarCounter();
+              setTimeout(generateQuestion, 1000);
+            } else {
+              this.classList.add("incorrect");
+              document.getElementById("message").innerHTML = "Incorrect! ❌";
+              starCount--;
+              updateStarCounter();
+            }
+          };
+        })(choice, correctAnswer);
         choicesDiv.appendChild(btn);
-      });
+      }
     }
     
     window.onload = function() {
